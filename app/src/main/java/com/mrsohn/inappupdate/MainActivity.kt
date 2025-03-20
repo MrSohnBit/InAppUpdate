@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
             } else {
-                Toast.makeText(this@MainActivity, "업데이트 불 가능", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "업데이트 불 가능(addOnSuccessListener)", Toast.LENGTH_SHORT).show()
             }
         }
 

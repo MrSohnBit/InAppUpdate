@@ -43,7 +43,7 @@ android {
     buildTypes {
         debug {
             defaultConfig.versionCode = 1
-            defaultConfig.versionName = "0.1.1"
+            defaultConfig.versionName = "0.1.${defaultConfig.versionCode}"
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -53,9 +53,11 @@ android {
         }
 
         release {
-            defaultConfig.versionCode = 100
-            defaultConfig.versionName = "0.1.101"
+            defaultConfig.versionCode = 1
+            defaultConfig.versionName = "0.1.${defaultConfig.versionCode}"
             isMinifyEnabled = false
+            isDebuggable  = false
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
