@@ -27,22 +27,30 @@
             android:textSize="20sp"
             android:text='안드로이드 InAppUpdate 테스트'/>
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:attr/progressBarStyleHorizontal"
+            />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:paddingTop="20dp"
             android:orientation="vertical">
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text='@{"Version Code: " + versionCode}'
-                tools:text="Version Code: 1"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text='@{"Version Name: " + versionName}'
+                android:text='@{"앱 버전명: " + versionName}'
                 tools:text="Version Name: 0.1.1"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='@{"앱 버전코드: " + versionCode}'
+                tools:text="Version Code: 1"/>
 
             <ScrollView
                 android:layout_width="match_parent"
@@ -57,12 +65,37 @@
             </ScrollView>
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/updateBtnLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <Button
+                android:id="@+id/forceUpdateBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="강제 업데이트"
+                android:layout_marginEnd="4dp"/>
+
+            <Button
+                android:id="@+id/flexUpdateBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="유연 업데이트"
+                android:layout_marginStart="4dp"/>
+
+        </LinearLayout>
+
         <Button
             android:id="@+id/updateBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
-            android:text="업데이트 테스트 "/>
+            android:text="업데이트 체크 "/>
 
     </LinearLayout>
 </layout>
