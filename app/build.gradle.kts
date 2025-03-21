@@ -53,7 +53,7 @@ android {
         }
 
         release {
-            defaultConfig.versionCode = 1
+            defaultConfig.versionCode = 6
             defaultConfig.versionName = "0.1.${defaultConfig.versionCode}"
             isMinifyEnabled = false
             isDebuggable  = false
