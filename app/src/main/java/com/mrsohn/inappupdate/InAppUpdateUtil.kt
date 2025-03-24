@@ -10,10 +10,16 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import com.google.android.material.snackbar.Snackbar
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.startActivity
+import androidx.databinding.DataBindingUtil.setContentView
+import com.google.android.gms.common.wrappers.Wrappers.packageManager
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -23,84 +29,68 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.mrsohn.inappupdate.databinding.ActivityMainBinding
-import com.mrsohn.inappupdate.databinding.LayoutRecentUpdateBinding
 
-class MainActivity : AppCompatActivity() {
+class InAppUpdateUtil(val activity: Activity,
+                      val activityResultLauncher: ActivityResultLauncher<IntentSenderRequest>) {
     private val TAG = javaClass.simpleName
 
-    private lateinit var binding: ActivityMainBinding
     private val appUpdateManager: AppUpdateManager by lazy {
-        AppUpdateManagerFactory.create(this)
+        AppUpdateManagerFactory.create(activity)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    fun onCreate() {
 
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
 
         try {
-            val packageInfo = packageManager.getPackageInfo(packageName, 0)
+            val packageInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
             val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                                 packageInfo.longVersionCode
                             } else {
-                                packageInfo.versionCode.toLong()
+                                packageInfo.versionCode
                             }
             val versionName = packageInfo.versionName
 
-            binding.versionCode = "$versionCode"
-            binding.versionName = versionName
-
             Log.d("MainActivity", "Version Code : $versionCode")
             Log.d("MainActivity", "Version Name : $versionName")
-
-
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
         }
 
-        binding.updateBtn.setOnClickListener {
-            binding.updateText.text = ""
-            checkForUpdates()
 
-            binding.updateBtnLayout.visibility = View.GONE
-        }
-
-        checkForUpdates()
     }
 
-    private val activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result: ActivityResult ->
-        Log.d(TAG, "inAppUpdate activityResultLauncher Update flow result code: OK")
-
-        when (result.resultCode) {
-            Activity.RESULT_OK -> {
-                Log.d(TAG, "Update flow result code: OK")
-//                restartApp()
-            }
-            Activity.RESULT_CANCELED -> {
-                Log.d(TAG, "Update flow result code: CANCELED")
-                showDialog("알림", "업데이트가 취소되었습니다..", { dialog, _ ->
-                    dialog.dismiss()
-                }, null)
-            }
-            else -> {
-                Log.e(TAG, "Update flow failed: result code = ${result.resultCode}")
-                showDialog("알림", "업데이트가 실패 했습니다..", { dialog, _ ->
-                    dialog.dismiss()
-                }, null)
-            }
-        }
-    }
+//    private val activityResultLauncher = activity.registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result: ActivityResult ->
+//        Log.d(TAG, "inAppUpdate activityResultLauncher Update flow result code: OK")
+//
+//        when (result.resultCode) {
+//            Activity.RESULT_OK -> {
+//                Log.d(TAG, "Update flow result code: OK")
+////                restartApp()
+//            }
+//            Activity.RESULT_CANCELED -> {
+//                Log.d(TAG, "Update flow result code: CANCELED")
+//                showDialog("알림", "업데이트가 취소되었습니다..", { dialog, _ ->
+//                    dialog.dismiss()
+//                }, null)
+//            }
+//            else -> {
+//                Log.e(TAG, "Update flow failed: result code = ${result.resultCode}")
+//                showDialog("알림", "업데이트가 실패 했습니다..", { dialog, _ ->
+//                    dialog.dismiss()
+//                }, null)
+//            }
+//        }
+//    }
 
 
     fun restartApp() {
         Handler(Looper.getMainLooper()).postDelayed({
 //            val packageManager = packageManager
-            val intent = packageManager.getLaunchIntentForPackage("com.mrsohn.inappupdate")
+            val intent = activity.packageManager.getLaunchIntentForPackage("com.mrsohn.inappupdate")
             val componentName = intent!!.component
             val mainIntent = Intent.makeRestartActivityTask(componentName)
-            startActivity(mainIntent)
+            activity.startActivity(mainIntent)
 //            exitProcess(0)
         }, 300)
     }
@@ -110,29 +100,29 @@ class MainActivity : AppCompatActivity() {
 
         appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
             var result =""
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
-                // Request the update.
-                binding.updateBtnLayout.visibility = View.VISIBLE
-
-                if (appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
-                    setResultTxt(true, result)
-                    binding.flexUpdateBtn.setOnClickListener {
-                        showUpdateAlert(appUpdateInfo, AppUpdateType.FLEXIBLE)
-                    }
-                }
-
-            } else {
-                binding.updateBtnLayout.visibility = View.VISIBLE
-            }
-
-            binding.flexUpdateBtn.visibility = if (appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) View.VISIBLE else View.GONE
-            binding.forceUpdateBtn.setOnClickListener {
-                showUpdateAlert(appUpdateInfo, AppUpdateType.IMMEDIATE)
-            }
-
-            binding.flexUpdateBtn.setOnClickListener {
-                showUpdateAlert(appUpdateInfo, AppUpdateType.FLEXIBLE)
-            }
+//            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+//                // Request the update.
+//                binding.updateBtnLayout.visibility = View.VISIBLE
+//
+//                if (appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
+//                    setResultTxt(true, result)
+//                    binding.flexUpdateBtn.setOnClickListener {
+//                        showUpdateAlert(appUpdateInfo, AppUpdateType.FLEXIBLE)
+//                    }
+//                }
+//
+//            } else {
+//                binding.updateBtnLayout.visibility = View.VISIBLE
+//            }
+//
+//            binding.flexUpdateBtn.visibility = if (appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) View.VISIBLE else View.GONE
+//            binding.forceUpdateBtn.setOnClickListener {
+//                showUpdateAlert(appUpdateInfo, AppUpdateType.IMMEDIATE)
+//            }
+//
+//            binding.flexUpdateBtn.setOnClickListener {
+//                showUpdateAlert(appUpdateInfo, AppUpdateType.FLEXIBLE)
+//            }
 
             setAppUpdateInfoLog(appUpdateInfo)
 
@@ -155,36 +145,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun recentVersionCheck(versionCode: Long) {
-        try {
-            val packageInfo = packageManager.getPackageInfo(packageName, 0)
-            val appVersionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                packageInfo.longVersionCode
-            } else {
-                packageInfo.versionCode.toLong()
-            }
-            val appVersionName = packageInfo.versionName
-
-            if (appVersionCode >= versionCode) {
-                binding.mainLayout.removeAllViews()
-                val recentView = LayoutRecentUpdateBinding.inflate(layoutInflater)
-                recentView.versionCode = "$versionCode"
-                recentView.versionName = appVersionName
-                binding.mainLayout.addView(recentView.root)
-            }
-
-            Log.d("MainActivity", "Version Code : $appVersionCode")
-            Log.d("MainActivity", "Version Name : $appVersionName")
-
-
-        } catch (e: PackageManager.NameNotFoundException) {
-            e.printStackTrace()
-        }
-    }
-
     fun setAppUpdateInfoLog(appUpdateInfo: AppUpdateInfo) {
         var result = ""
-        val packageInfo = packageManager.getPackageInfo(packageName, 0)
+        val packageInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
         val versionCode : Long = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                                     packageInfo.longVersionCode
                                 } else {
@@ -201,8 +164,6 @@ class MainActivity : AppCompatActivity() {
         result += "updateAvailability() : ${appUpdateInfo.updateAvailability()}\n"
 
         setResultTxt(true, result)
-
-        recentVersionCheck(appUpdateInfo.updateAvailability().toLong())
     }
 
     private fun showUpdateAlert(appUpdateInfo: AppUpdateInfo, appUpdateType: Int) {
@@ -211,7 +172,7 @@ class MainActivity : AppCompatActivity() {
             { _, _ ->
                 startUpdate(appUpdateInfo, appUpdateType)
 
-                binding.updateBtnLayout.visibility = View.GONE
+//                binding.updateBtnLayout.visibility = View.GONE
             },
             { dialog, _ ->})
     }
@@ -223,11 +184,12 @@ class MainActivity : AppCompatActivity() {
             sb.append("업데이트 정보 조회 실패\n\n")
 
         sb.append(resultText)
-        binding.updateText.text = sb.toString()
+//        binding.updateText.text = sb.toString()
     }
 
 
-    private fun startUpdate(appUpdateInfo: AppUpdateInfo, appUpdateType: Int) {
+    private fun startUpdate(appUpdateInfo: AppUpdateInfo,
+                            appUpdateType: Int) {
         appUpdateManager.startUpdateFlowForResult(
             // Pass the intent that is returned by 'getAppUpdateInfo()'.
             appUpdateInfo,
@@ -273,7 +235,7 @@ class MainActivity : AppCompatActivity() {
                 if (bytesDownloaded != 0L)
                     progress = ((bytesDownloaded/ totalBytesToDownload) * 100).toInt()
 
-                binding.progressBar.setProgress(progress, true)
+//                binding.progressBar.setProgress(progress, true)
             } else if (state.installStatus() == InstallStatus.INSTALLING) {
                 Log.i(TAG, "InappUpdate Update: InstallStatus.INSTALLING")
             } else if (state.installStatus() == InstallStatus.INSTALLED) {
@@ -294,7 +256,7 @@ class MainActivity : AppCompatActivity() {
 
 
     fun showDialog(title: String, message: String, positiveClickListener: DialogInterface.OnClickListener?, negativeClickListener: DialogInterface.OnClickListener?) {
-        AlertDialog.Builder(this@MainActivity).apply {
+        AlertDialog.Builder(activity).apply {
             setTitle(title)
             setMessage(message)
             positiveClickListener?.let {

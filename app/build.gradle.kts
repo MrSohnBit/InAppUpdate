@@ -53,7 +53,7 @@ android {
         }
 
         release {
-            defaultConfig.versionCode = 6
+            defaultConfig.versionCode = 1
             defaultConfig.versionName = "0.1.${defaultConfig.versionCode}"
             isMinifyEnabled = false
             isDebuggable  = false
@@ -64,7 +64,7 @@ android {
             )
             signingConfig = signingConfigs.getByName("sign")
 
-            val dateFormat = SimpleDateFormat("yyyyMMdd_HHmm")
+            val dateFormat = SimpleDateFormat("yyyyMMdd")
             val currentDate = dateFormat.format(Date())
 
             setProperty("archivesBaseName", "InAppUpdate_" + defaultConfig.versionName+"("+defaultConfig.versionCode+")"+ "_" + currentDate)
