@@ -48,7 +48,7 @@ class InAppUpdateUtil(val activity: Activity,
 
     }
 
-    private fun checkForUpdates(isForceUpdate: Boolean = false) {
+    private fun checkForUpdates() {
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
         appUpdateManager.registerListener(inAppUpdateListener)
 
