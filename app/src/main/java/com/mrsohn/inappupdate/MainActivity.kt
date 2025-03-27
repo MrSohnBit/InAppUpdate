@@ -2,12 +2,9 @@ package com.mrsohn.inappupdate
 
 import android.app.Activity
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResult
@@ -94,19 +91,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun restartApp() {
-        Handler(Looper.getMainLooper()).postDelayed({
-//            val packageManager = packageManager
-            val intent = packageManager.getLaunchIntentForPackage("com.mrsohn.inappupdate")
-            val componentName = intent!!.component
-            val mainIntent = Intent.makeRestartActivityTask(componentName)
-            startActivity(mainIntent)
-//            exitProcess(0)
-        }, 300)
-    }
-
     private fun checkForUpdates(isForceUpdate: Boolean = false) {
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+        appUpdateManager.registerListener(inAppUpdateListener)
 
         appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
             var result =""
@@ -229,69 +216,42 @@ class MainActivity : AppCompatActivity() {
 
     private fun startUpdate(appUpdateInfo: AppUpdateInfo, appUpdateType: Int) {
         appUpdateManager.startUpdateFlowForResult(
-            // Pass the intent that is returned by 'getAppUpdateInfo()'.
             appUpdateInfo,
-            // an activity result launcher registered via registerForActivityResult
             activityResultLauncher,
-            // Or pass 'AppUpdateType.FLEXIBLE' to newBuilder() for
-            // flexible updates.
             AppUpdateOptions.newBuilder(appUpdateType)
-//            AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE)
                 .build())
 
-        setAppUpdateListener(appUpdateInfo, appUpdateType)
     }
 
-    fun setAppUpdateListener(appUpdateInfo: AppUpdateInfo, appUpdateType: Int) {
-        // Create a listener to track request state updates.
-        val inAppUpdateListener = InstallStateUpdatedListener { state ->
-            // (Optional) Provide a download progress bar.
+    val inAppUpdateListener = InstallStateUpdatedListener { state ->
+        // (Optional) Provide a download progress bar.
 
-            if (state.installStatus() == InstallStatus.DOWNLOADED) {
-                // 업데이트가 다운로드되면 앱을 재시작합니다.
-                appUpdateManager.completeUpdate()
-//                popupSnackbarForCompleteUpdate()
-//                Log.i(TAG, "InappUpdate Update: InstallStatus.DOWNLOADED, FLEXIBLE=${appUpdateType == AppUpdateType.FLEXIBLE}")
-//                if (appUpdateType == AppUpdateType.FLEXIBLE) {
-//                    showDialog("다운로드 완료",
-//                        "다운로드가 완료되었습니다. 설치 하시겠습니까?",
-//                        { _, _ ->
-////                            startUpdate(appUpdateInfo, AppUpdateType.IMMEDIATE)
-//                            checkForUpdates(true)
-//                        },
-//                        { _, _ ->
-//
-//                        })
-//
-//                }
-//                checkForUpdates(false)
-            } else if (state.installStatus() == InstallStatus.PENDING) {
-                Log.i(TAG, "InappUpdate Update: InstallStatus.PENDING")
-            } else if (state.installStatus() == InstallStatus.DOWNLOADING) {
-                val bytesDownloaded = state.bytesDownloaded()
-                val totalBytesToDownload = state.totalBytesToDownload()
-                Log.i(TAG, "InAppUpdate InstallStatus.DOWNLOADING: ${bytesDownloaded} / ${totalBytesToDownload}")
-                var progress = 0
-                if (bytesDownloaded != 0L)
-                    progress = ((bytesDownloaded/ totalBytesToDownload) * 100).toInt()
+        if (state.installStatus() == InstallStatus.DOWNLOADED) {
+            // 업데이트가 다운로드되면 앱을 재시작합니다.
+            appUpdateManager.completeUpdate()
+        } else if (state.installStatus() == InstallStatus.PENDING) {
+            Log.i(TAG, "InappUpdate Update: InstallStatus.PENDING")
+        } else if (state.installStatus() == InstallStatus.DOWNLOADING) {
+            val bytesDownloaded = state.bytesDownloaded()
+            val totalBytesToDownload = state.totalBytesToDownload()
+            Log.i(TAG, "InAppUpdate InstallStatus.DOWNLOADING: ${bytesDownloaded} / ${totalBytesToDownload}")
+            var progress = 0
+            if (bytesDownloaded != 0L)
+                progress = ((bytesDownloaded/ totalBytesToDownload) * 100).toInt()
 
-                binding.progressBar.setProgress(progress, true)
-            } else if (state.installStatus() == InstallStatus.INSTALLING) {
-                Log.i(TAG, "InappUpdate Update: InstallStatus.INSTALLING")
-            } else if (state.installStatus() == InstallStatus.INSTALLED) {
-                Log.i(TAG, "InappUpdate Update: InstallStatus.INSTALLED")
-                // 앱을 재시작해줍니다.
-                restartApp()
-            } else if (state.installStatus() == InstallStatus.FAILED) {
-                Log.i(TAG, "InappUpdate Update: InstallStatus.FAILED")
-            } else if (state.installStatus() == InstallStatus.CANCELED) {
-                Log.i(TAG, "InappUpdate Update: InstallStatus.CANCELED")
-            } else {
-                Log.i(TAG, "InappUpdate Update: Else(${state.installStatus()})")
-            }
+            binding.progressBar.setProgress(progress, true)
+        } else if (state.installStatus() == InstallStatus.INSTALLING) {
+            Log.i(TAG, "InappUpdate Update: InstallStatus.INSTALLING")
+        } else if (state.installStatus() == InstallStatus.INSTALLED) {
+            Log.i(TAG, "InappUpdate Update: InstallStatus.INSTALLED")
+            // 앱을 재시작해줍니다.
+        } else if (state.installStatus() == InstallStatus.FAILED) {
+            Log.i(TAG, "InappUpdate Update: InstallStatus.FAILED")
+        } else if (state.installStatus() == InstallStatus.CANCELED) {
+            Log.i(TAG, "InappUpdate Update: InstallStatus.CANCELED")
+        } else {
+            Log.i(TAG, "InappUpdate Update: Else(${state.installStatus()})")
         }
-
-        appUpdateManager.registerListener(inAppUpdateListener)
     }
 
 
@@ -312,5 +272,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        appUpdateManager.unregisterListener(inAppUpdateListener)
     }
 }
