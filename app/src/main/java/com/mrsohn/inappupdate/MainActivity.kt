@@ -248,21 +248,23 @@ class MainActivity : AppCompatActivity() {
             // (Optional) Provide a download progress bar.
 
             if (state.installStatus() == InstallStatus.DOWNLOADED) {
+                // 업데이트가 다운로드되면 앱을 재시작합니다.
+                appUpdateManager.completeUpdate()
 //                popupSnackbarForCompleteUpdate()
-                Log.i(TAG, "InappUpdate Update: InstallStatus.DOWNLOADED, FLEXIBLE=${appUpdateType == AppUpdateType.FLEXIBLE}")
-                if (appUpdateType == AppUpdateType.FLEXIBLE) {
-                    showDialog("다운로드 완료",
-                        "다운로드가 완료되었습니다. 설치 하시겠습니까?",
-                        { _, _ ->
-//                            startUpdate(appUpdateInfo, AppUpdateType.IMMEDIATE)
-                            checkForUpdates(true)
-                        },
-                        { _, _ ->
-
-                        })
-
-                }
-                checkForUpdates(false)
+//                Log.i(TAG, "InappUpdate Update: InstallStatus.DOWNLOADED, FLEXIBLE=${appUpdateType == AppUpdateType.FLEXIBLE}")
+//                if (appUpdateType == AppUpdateType.FLEXIBLE) {
+//                    showDialog("다운로드 완료",
+//                        "다운로드가 완료되었습니다. 설치 하시겠습니까?",
+//                        { _, _ ->
+////                            startUpdate(appUpdateInfo, AppUpdateType.IMMEDIATE)
+//                            checkForUpdates(true)
+//                        },
+//                        { _, _ ->
+//
+//                        })
+//
+//                }
+//                checkForUpdates(false)
             } else if (state.installStatus() == InstallStatus.PENDING) {
                 Log.i(TAG, "InappUpdate Update: InstallStatus.PENDING")
             } else if (state.installStatus() == InstallStatus.DOWNLOADING) {
