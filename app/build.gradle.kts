@@ -85,6 +85,8 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    implementation("com.android.installreferrer:installreferrer:2.2")
+
     implementation(libs.inapp.update)
 
 }
