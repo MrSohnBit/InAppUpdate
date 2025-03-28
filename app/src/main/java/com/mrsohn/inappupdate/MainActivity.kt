@@ -1,24 +1,16 @@
 package com.mrsohn.inappupdate
 
 import android.app.Activity
-import android.content.ContentValues
-import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
-import android.provider.MediaStore
-import android.provider.Settings
 import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -29,10 +21,6 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.mrsohn.inappupdate.databinding.ActivityMainBinding
 import com.mrsohn.inappupdate.databinding.LayoutRecentUpdateBinding
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
-import java.io.OutputStream
 
 class MainActivity : AppCompatActivity() {
     private val TAG = javaClass.simpleName
@@ -75,10 +63,6 @@ class MainActivity : AppCompatActivity() {
 
             binding.updateBtnLayout.visibility = View.GONE
         }
-
-        checkForUpdates()
-
-
 
     }
 
@@ -299,5 +283,10 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         appUpdateManager.unregisterListener(inAppUpdateListener)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkForUpdates()
     }
 }
