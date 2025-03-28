@@ -1,16 +1,24 @@
 package com.mrsohn.inappupdate
 
 import android.app.Activity
+import android.content.ContentValues
+import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -21,6 +29,10 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.mrsohn.inappupdate.databinding.ActivityMainBinding
 import com.mrsohn.inappupdate.databinding.LayoutRecentUpdateBinding
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 
 class MainActivity : AppCompatActivity() {
     private val TAG = javaClass.simpleName
@@ -40,10 +52,10 @@ class MainActivity : AppCompatActivity() {
         try {
             val packageInfo = packageManager.getPackageInfo(packageName, 0)
             val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                packageInfo.longVersionCode
-                            } else {
-                                packageInfo.versionCode.toLong()
-                            }
+                packageInfo.longVersionCode
+            } else {
+                packageInfo.versionCode.toLong()
+            }
             val versionName = packageInfo.versionName
 
             binding.versionCode = "$versionCode"
@@ -65,7 +77,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         checkForUpdates()
+
+
+
     }
+
+
 
     private val activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result: ActivityResult ->
         Log.d(TAG, "inAppUpdate activityResultLauncher Update flow result code: OK")
@@ -158,6 +175,11 @@ class MainActivity : AppCompatActivity() {
                 recentView.versionCode = "$versionCode"
                 recentView.versionName = appVersionName
                 binding.mainLayout.addView(recentView.root)
+
+                recentView.appInstallBtn.setOnClickListener {
+                    val fileName = "InAppUpdate_0.1.1.apk"
+                    ApkInstallUtil().copyOrOpenApkFile(this, fileName)  // assets/myapp.apk → Download/myapp.apk → APK 설치 실행
+                }
             }
 
             Log.d("MainActivity", "Version Code : $appVersionCode")
@@ -173,10 +195,10 @@ class MainActivity : AppCompatActivity() {
         var result = ""
         val packageInfo = packageManager.getPackageInfo(packageName, 0)
         val versionCode : Long = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                    packageInfo.longVersionCode
-                                } else {
-                                    packageInfo.versionCode.toLong()
-                                }
+            packageInfo.longVersionCode
+        } else {
+            packageInfo.versionCode.toLong()
+        }
 
         if (versionCode >= appUpdateInfo.availableVersionCode()) {
             result = "최신버전 입니다.\n\n"

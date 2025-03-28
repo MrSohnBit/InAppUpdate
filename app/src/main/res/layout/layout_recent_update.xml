@@ -48,5 +48,18 @@
             android:text='@{"버전명 : "+versionName}'
             tools:text="버전명 : 0.0.0"/>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="bottom">
+            <Button
+                android:id="@+id/appInstallBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="이전버전 설치"
+                android:layout_marginEnd="4dp"/>
+        </LinearLayout>
+
     </LinearLayout>
 </layout>
