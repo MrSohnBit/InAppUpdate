@@ -162,7 +162,7 @@ class MainActivity : AppCompatActivity() {
                 binding.mainLayout.addView(recentView.root, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
                 recentView.appInstallBtn.setOnClickListener {
-                    val fileName = "InAppUpdate_0.1.1.apk"
+                    val fileName = "InAppUpdate_0.1.1_release.apk"
                     ApkInstallUtil().copyOrOpenApkFile(this, fileName)  // assets/myapp.apk → Download/myapp.apk → APK 설치 실행
                 }
             }
