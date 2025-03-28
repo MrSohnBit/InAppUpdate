@@ -1,0 +1,115 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+# fastlane action capture_android_screenshots
+# fastlane action upload_to_play_store
+
+default_platform(:android)
+
+platform :android do
+
+desc "Runs all the tests"
+    lane :test do
+        gradle(task: "test")
+    end
+
+desc "Submit a new Beta Build to Crashlytics Beta"
+    lane :beta do
+        gradle(task: "clean assembleRelease")
+        crashlytics
+
+        # sh "your_script.sh"
+        # You can also use other beta testing services here
+    end
+
+desc "버전 증가 "
+    lane :increment_version do
+        latest_release = firebase_app_distribution_get_latest_release(
+          app: "com.mrsohn.inappupdate"
+        )
+        increment_version_code({ version_code: latest_release[:buildVersion].to_i + 1 })
+    end
+
+desc "Deploy a new version to the Google Play"
+    lane :deploy do
+#         gradle(task: "bundleRelease")
+        gradle(
+            task: 'bundle',         # assemble, bundle
+            build_type: 'Release'
+        )
+
+        app_dir = "app"
+        parent_directory = File.expand_path('..', Dir.pwd)
+        aab_path = "#{parent_directory}/app/build/outputs/bundle/release/"
+        aab_file = Dir["#{aab_path}*.aab"].last
+#         aab_file = Dir["#{aab_path}*.aab"].last
+
+        # 현재 운영체제가 Windows인지 확인
+        if RbConfig::CONFIG['host_os'] =~ /mingw|mswin|cygwin/i
+            # Windows인 경우, /를 \로 변경
+          aab_path = aab_path.gsub("/", "\\")
+          aab_file = aab_file.gsub("/", "\\")
+#           sh "explorer #{aab_path}"
+        end
+
+    track = "internal"              # production, beta(공개테스트), alpha(비공개테스트), internal(내부테스트)
+    release_status = "completed"    # completed, draft, halted, inProgress
+    # 프로덕션으로 업로드시 inProgress로 설정
+    if track == "production"
+        release_status = "inProgress"
+    end
+
+    upload_to_play_store(
+        track: "#{track}", # production, beta(공개테스트), alpha(비공개테스트), internal(내부테스트)
+        release_status: "#{release_status}", # completed, draft, halted, inProgress
+        aab: aab_file,
+        skip_upload_metadata: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: true,
+        skip_upload_apk: true,
+        rollout: "1.0"      # 100% 배포
+    )
+
+    puts "AAB File: #{aab_file}"
+    end
+
+desc "Build debug and test APK for screenshots"
+    lane :build_for_screengrab do
+        gradle(
+          task: 'clean'
+        )
+        build_android_app(
+          task: 'assemble',
+          build_type: 'Debug'
+        )
+        build_android_app(
+          task: 'assemble',
+          build_type: 'AndroidTest'
+        )
+    end
+
+    lane :screenshots do
+      capture_android_screenshots
+#       upload_to_play_store
+    end
+
+    lane :beta2 do
+      gradle(
+        task: 'bundle',
+        build_type: 'Release'
+      )
+    end
+
+end
