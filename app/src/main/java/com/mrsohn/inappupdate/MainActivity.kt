@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -158,7 +159,7 @@ class MainActivity : AppCompatActivity() {
                 val recentView = LayoutRecentUpdateBinding.inflate(layoutInflater)
                 recentView.versionCode = "$versionCode"
                 recentView.versionName = appVersionName
-                binding.mainLayout.addView(recentView.root)
+                binding.mainLayout.addView(recentView.root, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
                 recentView.appInstallBtn.setOnClickListener {
                     val fileName = "InAppUpdate_0.1.1.apk"

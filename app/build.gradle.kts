@@ -15,7 +15,7 @@ android {
         minSdk = 24
         targetSdk = 35
 
-        versionCode = 116
+        versionCode = 117
         versionName = "0.1.${defaultConfig.versionCode}"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -45,7 +45,7 @@ android {
 
     buildTypes {
         debug {
-            defaultConfig.versionCode = 1
+            defaultConfig.versionCode = 117
             defaultConfig.versionName = "0.1.${defaultConfig.versionCode}"
             isMinifyEnabled = false
             proguardFiles(
